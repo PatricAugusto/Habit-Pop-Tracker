@@ -12,10 +12,11 @@ export default function App() {
     items,
     online,
     syncing,
-    pendingItems,
+    pendingCount,
     todayItems,
     totals,
     addConsumption,
+    removeConsumption,
     syncItems,
   } = useConsumptions();
 
@@ -28,9 +29,10 @@ export default function App() {
         <ConsumptionCarousel onAdd={addConsumption} />
         <RecentConsumptions
           items={items}
-          pendingCount={pendingItems.length}
+          pendingCount={pendingCount}
           syncing={syncing}
           online={online}
+          onRemove={removeConsumption}
           onSync={syncItems}
         />
       </ScrollView>

@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, consumptionMeta } from "../config/appConfig";
 import { formatTime } from "../domain/consumptions";
 
-export function RecentConsumptions({ items, pendingCount, syncing, online, onSync }) {
+export function RecentConsumptions({ items, pendingCount, syncing, online, onRemove, onSync }) {
   return (
     <>
       <View style={styles.listHeader}>
@@ -31,6 +31,22 @@ export function RecentConsumptions({ items, pendingCount, syncing, online, onSyn
                 <Text style={[styles.syncState, { color: item.pendingSync ? colors.coral : colors.teal }]}>
                   {item.pendingSync ? "PENDENTE" : "SYNC"}
                 </Text>
+                <Pressable
+                  accessibilityLabel={`Excluir ${meta.label}`}
+                  hitSlop={8}
+                  onPress={() =>
+                    Alert.alert(
+                      "Excluir registro?",
+                      `${meta.label} x${item.quantity} será removido.`,
+                      [
+                        { text: "Cancelar", style: "cancel" },
+                        { text: "Excluir", style: "destructive", onPress: () => onRemove(item.clientId) },
+                      ],
+                    )
+                  }
+                >
+                  <Text style={styles.deleteText}>Excluir</Text>
+                </Pressable>
               </View>
             </View>
             {index < Math.min(items.length, 5) - 1 && <View style={styles.separator} />}

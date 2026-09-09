@@ -138,6 +138,12 @@ export async function getConsumptionByClientId(clientId: string): Promise<Consum
     clientId,
   );
 }
+
+export async function deleteConsumptionByClientId(clientId: string): Promise<void> {
+  const db = await getDatabase();
+  await db.run('DELETE FROM consumptions WHERE client_id = ?', clientId);
+}
+
 export async function listConsumptions(from?: string, to?: string): Promise<Consumption[]> {
   const db = await getDatabase();
   const conditions: string[] = [];

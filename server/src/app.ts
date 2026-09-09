@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import {
   ConsumptionInput,
   ConsumptionType,
+  deleteConsumptionByClientId,
   getConsumptionByClientId,
   insertConsumption,
   insertConsumptions,
@@ -95,4 +96,13 @@ app.post('/api/v1/sync', async (request, response, next) => {
 app.use((error: unknown, _request: Request, response: Response, _next: express.NextFunction) => {
   console.error(error);
   response.status(500).json({ error: 'Internal server error' });
+});
+
+app.delete('/api/v1/consumptions/:clientId', async (request, response, next) => {
+  try {
+    await deleteConsumptionByClientId(request.params.clientId);
+    response.status(204).send();
+  } catch (error) {
+    next(error);
+  }
 });

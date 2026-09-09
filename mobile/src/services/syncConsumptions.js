@@ -13,3 +13,14 @@ export async function syncConsumptions(items) {
 
   return response.json();
 }
+
+export async function deleteConsumption(clientId) {
+  const response = await fetch(
+    `${API_URL}/api/v1/consumptions/${encodeURIComponent(clientId)}`,
+    { method: "DELETE" },
+  );
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error("delete failed");
+  }
+}
