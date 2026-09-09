@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "../config/appConfig";
+import { colors, consumptionMeta } from "../config/appConfig";
 
 export function DailySummary({ recordCount, totals }) {
   return (
@@ -9,8 +9,10 @@ export function DailySummary({ recordCount, totals }) {
         <Text style={styles.summaryCount}>{recordCount} registros</Text>
       </View>
       <View style={styles.totals}>
-        <Text>{totals.beer} cervejas</Text>
-        <Text>{totals.cigarette} cigarros</Text>
+        <Text>{totals.beer} {consumptionMeta.beer.label.toLowerCase()}</Text>
+        <Text>{totals.cigarette} {consumptionMeta.cigarette.label.toLowerCase()}</Text>
+        <Text>{totals.water} {consumptionMeta.water.label.toLowerCase()}</Text>
+        <Text>{totals.coffee} {consumptionMeta.coffee.label.toLowerCase()}</Text>
       </View>
     </View>
   );

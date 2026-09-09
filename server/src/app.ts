@@ -9,7 +9,7 @@ import {
   listConsumptions,
 } from './db';
 
-const validTypes: ConsumptionType[] = ['beer', 'cigarette'];
+const validTypes: ConsumptionType[] = ['beer', 'cigarette', 'water', 'coffee'];
 
 function isConsumptionInput(value: unknown): value is ConsumptionInput {
   if (!value || typeof value !== 'object') return false;

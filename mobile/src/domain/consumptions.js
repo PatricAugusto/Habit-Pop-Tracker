@@ -24,7 +24,7 @@ export function getTotals(items) {
       ...result,
       [item.type]: result[item.type] + item.quantity,
     }),
-    { beer: 0, cigarette: 0 },
+    { beer: 0, cigarette: 0, water: 0, coffee: 0 },
   );
 }
 

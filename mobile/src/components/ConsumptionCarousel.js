@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors } from "../config/appConfig";
+import { colors, CONSUMPTION_TYPES, consumptionMeta } from "../config/appConfig";
 
-const consumptionCards = [
-  { type: "beer", label: "Cerveja", icon: "●", accent: colors.yellow, artLabel: "PAUSA GELADA" },
-  { type: "cigarette", label: "Cigarro", icon: "▰", accent: colors.coral, artLabel: "MOMENTO" },
-];
+const consumptionCards = CONSUMPTION_TYPES.map((type) => ({ type, ...consumptionMeta[type] }));
 
 export function ConsumptionCarousel({ onAdd }) {
-  const [quantities, setQuantities] = useState({ beer: 1, cigarette: 1 });
+  const [quantities, setQuantities] = useState(
+    Object.fromEntries(CONSUMPTION_TYPES.map((type) => [type, 1])),
+  );
 
   function updateQuantity(type, change) {
     setQuantities((current) => ({

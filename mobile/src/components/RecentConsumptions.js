@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors } from "../config/appConfig";
+import { colors, consumptionMeta } from "../config/appConfig";
 import { formatTime } from "../domain/consumptions";
 
 export function RecentConsumptions({ items, pendingCount, syncing, online, onSync }) {
@@ -12,15 +12,17 @@ export function RecentConsumptions({ items, pendingCount, syncing, online, onSyn
         </Pressable>
       </View>
       <View style={styles.list}>
-        {items.slice(0, 5).map((item, index) => (
-          <View key={item.clientId}>
+        {items.slice(0, 5).map((item, index) => {
+          const meta = consumptionMeta[item.type];
+          return (
+            <View key={item.clientId}>
             <View style={styles.item}>
               <View style={styles.itemInfo}>
-                <View style={[styles.itemIcon, { backgroundColor: item.type === "beer" ? colors.yellow : colors.coral }]}>
-                  <Text>{item.type === "beer" ? "●" : "▰"}</Text>
+                <View style={[styles.itemIcon, { backgroundColor: meta.accent }]}>
+                  <Text>{meta.icon}</Text>
                 </View>
                 <View>
-                  <Text style={styles.itemTitle}>{item.type === "beer" ? "Cerveja" : "Cigarro"}</Text>
+                  <Text style={styles.itemTitle}>{meta.label}</Text>
                   <Text style={styles.itemTime}>{formatTime(item.occurredAt)}</Text>
                 </View>
               </View>
@@ -32,8 +34,9 @@ export function RecentConsumptions({ items, pendingCount, syncing, online, onSyn
               </View>
             </View>
             {index < Math.min(items.length, 5) - 1 && <View style={styles.separator} />}
-          </View>
-        ))}
+            </View>
+          );
+        })}
         {items.length === 0 && <Text style={styles.empty}>Seu primeiro registro começa aqui.</Text>}
       </View>
     </>

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { open, Database } from 'sqlite';
 import sqlite3 from 'sqlite3';
 
-export type ConsumptionType = 'beer' | 'cigarette';
+export type ConsumptionType = 'beer' | 'cigarette' | 'water' | 'coffee';
 
 export interface Consumption {
   id: number;
@@ -28,18 +28,45 @@ export function getDatabase(): Promise<Database> {
     const filename = path.resolve(process.env.DATABASE_PATH ?? './data/habit-pop.sqlite');
     await fs.mkdir(path.dirname(filename), { recursive: true });
     const db = await open({ filename, driver: sqlite3.Database });
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS consumptions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        client_id TEXT NOT NULL UNIQUE,
-        type TEXT NOT NULL CHECK (type IN ('beer', 'cigarette')),
-        quantity INTEGER NOT NULL CHECK (quantity > 0),
-        occurred_at TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE INDEX IF NOT EXISTS idx_consumptions_occurred_at
-        ON consumptions (occurred_at);
-    `);
+    const table = await db.get<{ sql: string }>(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'consumptions'",
+    );
+
+    if (!table) {
+      await db.exec(`
+        CREATE TABLE consumptions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          client_id TEXT NOT NULL UNIQUE,
+          type TEXT NOT NULL CHECK (type IN ('beer', 'cigarette', 'water', 'coffee')),
+          quantity INTEGER NOT NULL CHECK (quantity > 0),
+          occurred_at TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX idx_consumptions_occurred_at
+          ON consumptions (occurred_at);
+      `);
+    } else if (!table.sql.includes("'water'") || !table.sql.includes("'coffee'")) {
+      await db.exec(`
+        BEGIN;
+        DROP INDEX IF EXISTS idx_consumptions_occurred_at;
+        ALTER TABLE consumptions RENAME TO consumptions_legacy;
+        CREATE TABLE consumptions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          client_id TEXT NOT NULL UNIQUE,
+          type TEXT NOT NULL CHECK (type IN ('beer', 'cigarette', 'water', 'coffee')),
+          quantity INTEGER NOT NULL CHECK (quantity > 0),
+          occurred_at TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        INSERT INTO consumptions (id, client_id, type, quantity, occurred_at, created_at)
+          SELECT id, client_id, type, quantity, occurred_at, created_at
+          FROM consumptions_legacy;
+        DROP TABLE consumptions_legacy;
+        CREATE INDEX idx_consumptions_occurred_at
+          ON consumptions (occurred_at);
+        COMMIT;
+      `);
+    }
     return db;
   })();
 
