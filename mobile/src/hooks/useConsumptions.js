@@ -1,5 +1,5 @@
 import NetInfo from "@react-native-community/netinfo";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { createConsumption, getPendingItems, getTodayItems, getTotals } from "../domain/consumptions";
 import {
@@ -15,6 +15,7 @@ export function useConsumptions() {
   const [deletedClientIds, setDeletedClientIds] = useState([]);
   const [online, setOnline] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const syncingRef = useRef(false);
 
   const persistItems = useCallback(async (nextItems) => {
     setItems(nextItems);
@@ -55,8 +56,13 @@ export function useConsumptions() {
   }, [deletedClientIds, items, persistItems]);
 
   const syncItems = useCallback(async () => {
-    if (!online || (pendingItems.length === 0 && deletedClientIds.length === 0)) return;
+    if (
+      syncingRef.current ||
+      !online ||
+      (pendingItems.length === 0 && deletedClientIds.length === 0)
+    ) return;
 
+    syncingRef.current = true;
     setSyncing(true);
     try {
       await syncConsumptions(pendingItems);
@@ -72,6 +78,7 @@ export function useConsumptions() {
         "Seus registros continuam salvos neste aparelho.",
       );
     } finally {
+      syncingRef.current = false;
       setSyncing(false);
     }
   }, [deletedClientIds, items, online, pendingItems, persistItems]);
