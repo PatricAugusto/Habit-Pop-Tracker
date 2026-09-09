@@ -72,6 +72,45 @@ export async function insertConsumption(input: ConsumptionInput): Promise<Consum
   return consumption;
 }
 
+export async function insertConsumptions(inputs: ConsumptionInput[]): Promise<Consumption[]> {
+  const db = await getDatabase();
+  await db.run('BEGIN');
+
+  try {
+    for (const input of inputs) {
+      await db.run(
+        `INSERT OR IGNORE INTO consumptions
+          (client_id, type, quantity, occurred_at)
+          VALUES (?, ?, ?, ?)`,
+        input.clientId,
+        input.type,
+        input.quantity,
+        input.occurredAt,
+      );
+    }
+
+    const stored = await Promise.all(inputs.map((input) => getConsumptionByClientId(input.clientId)));
+    if (stored.some((consumption) => !consumption)) {
+      throw new Error('Consumption could not be stored');
+    }
+
+    await db.run('COMMIT');
+    return stored as Consumption[];
+  } catch (error) {
+    await db.run('ROLLBACK');
+    throw error;
+  }
+}
+
+export async function getConsumptionByClientId(clientId: string): Promise<Consumption | undefined> {
+  const db = await getDatabase();
+  return db.get<Consumption>(
+    `SELECT id, client_id AS clientId, type, quantity,
+      occurred_at AS occurredAt, created_at AS createdAt
+      FROM consumptions WHERE client_id = ?`,
+    clientId,
+  );
+}
 export async function listConsumptions(from?: string, to?: string): Promise<Consumption[]> {
   const db = await getDatabase();
   const conditions: string[] = [];

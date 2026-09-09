@@ -1,6 +1,13 @@
 import cors from 'cors';
 import express, { Request, Response } from 'express';
-import { ConsumptionInput, ConsumptionType, insertConsumption, listConsumptions } from './db';
+import {
+  ConsumptionInput,
+  ConsumptionType,
+  getConsumptionByClientId,
+  insertConsumption,
+  insertConsumptions,
+  listConsumptions,
+} from './db';
 
 const validTypes: ConsumptionType[] = ['beer', 'cigarette'];
 
@@ -43,6 +50,20 @@ app.get('/api/v1/consumptions', async (request, response, next) => {
   }
 });
 
+app.get('/api/v1/consumptions/:clientId', async (request, response, next) => {
+  try {
+    const consumption = await getConsumptionByClientId(request.params.clientId);
+    if (!consumption) {
+      response.status(404).json({ error: 'Consumption not found' });
+      return;
+    }
+
+    response.json({ data: consumption });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post('/api/v1/consumptions', async (request, response, next) => {
   if (!isConsumptionInput(request.body)) {
     sendValidationError(response);
@@ -58,16 +79,13 @@ app.post('/api/v1/consumptions', async (request, response, next) => {
 
 app.post('/api/v1/sync', async (request, response, next) => {
   const items = request.body?.consumptions;
-  if (!Array.isArray(items) || !items.every(isConsumptionInput)) {
+  if (!Array.isArray(items) || items.length > 500 || !items.every(isConsumptionInput)) {
     response.status(400).json({ error: 'Invalid sync payload' });
     return;
   }
 
   try {
-    const data = [];
-    for (const item of items) {
-      data.push(await insertConsumption(item));
-    }
+    const data = await insertConsumptions(items);
     response.json({ data, syncedAt: new Date().toISOString() });
   } catch (error) {
     next(error);
