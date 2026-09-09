@@ -36,8 +36,7 @@ function formatTime(date) {
 }
 
 export default function App() {
-  const [type, setType] = useState("beer");
-  const [quantity, setQuantity] = useState(1);
+  const [quantities, setQuantities] = useState({ beer: 1, cigarette: 1 });
   const [items, setItems] = useState([]);
   const [online, setOnline] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -78,18 +77,18 @@ export default function App() {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextItems));
   }
 
-  async function addConsumption() {
+  async function addConsumption(itemType) {
     await saveItems([
       {
         clientId: makeClientId(),
-        type,
-        quantity,
+        type: itemType,
+        quantity: quantities[itemType],
         occurredAt: new Date().toISOString(),
         pendingSync: true,
       },
       ...items,
     ]);
-    setQuantity(1);
+    setQuantities((current) => ({ ...current, [itemType]: 1 }));
   }
 
   async function syncItems() {
@@ -153,53 +152,79 @@ export default function App() {
             <Text>{totals.cigarette} cigarros</Text>
           </View>
         </View>
-        <Text style={styles.sectionTitle}>Registrar agora</Text>
-        <View style={styles.options}>
-          {["beer", "cigarette"].map((option) => (
-            <Pressable
-              key={option}
-              style={[styles.option, type === option && styles.optionSelected]}
-              onPress={() => setType(option)}
-            >
-              <Text style={styles.optionIcon}>
-                {option === "beer" ? "●" : "▰"}
-              </Text>
-              <Text
-                style={[styles.optionText, type === option && styles.lightText]}
-              >
-                {option === "beer" ? "Cerveja" : "Cigarro"}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.registerHeader}>
+          <Text style={styles.sectionTitle}>Registrar agora</Text>
+          <Text style={styles.swipeHint}>deslize para o lado →</Text>
         </View>
-        <View style={styles.card}>
-          <View style={styles.quantityRow}>
-            <View>
-              <Text style={styles.quantityLabel}>QUANTIDADE</Text>
-              <Text style={styles.quantityText}>{quantity} unidade(s)</Text>
-            </View>
-            <View style={styles.stepper}>
-              <Pressable
-                style={styles.stepButton}
-                onPress={() => setQuantity(Math.max(1, quantity - 1))}
-              >
-                <Text style={styles.stepText}>−</Text>
-              </Pressable>
-              <Text style={styles.quantityNumber}>{quantity}</Text>
-              <Pressable
-                style={[styles.stepButton, styles.plus]}
-                onPress={() => setQuantity(quantity + 1)}
-              >
-                <Text style={styles.lightText}>+</Text>
-              </Pressable>
-            </View>
-          </View>
-          <Pressable style={styles.primaryButton} onPress={addConsumption}>
-            <Text style={styles.primaryText}>
-              Registrar {type === "beer" ? "cerveja" : "cigarro"}
-            </Text>
-          </Pressable>
-        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.carouselContent}
+          style={styles.carousel}
+          decelerationRate="fast"
+          snapToInterval={304}
+        >
+          {["beer", "cigarette"].map((itemType) => {
+            const label = itemType === "beer" ? "Cerveja" : "Cigarro";
+            const icon = itemType === "beer" ? "●" : "▰";
+            const accent = itemType === "beer" ? colors.yellow : colors.coral;
+
+            return (
+              <View key={itemType} style={styles.recordCard}>
+                <View style={[styles.recordArt, { backgroundColor: accent }]}>
+                  <Text style={styles.recordIcon}>{icon}</Text>
+                  <Text style={styles.recordArtLabel}>
+                    {itemType === "beer" ? "PAUSA GELADA" : "MOMENTO"}
+                  </Text>
+                </View>
+                <Text style={styles.recordTitle}>{label}</Text>
+                <Text style={styles.recordDescription}>
+                  Quantas unidades agora?
+                </Text>
+                <View style={styles.quantityRow}>
+                  <Text style={styles.quantityText}>
+                    {quantities[itemType]} unidade(s)
+                  </Text>
+                  <View style={styles.stepper}>
+                    <Pressable
+                      accessibilityLabel={`Diminuir ${label}`}
+                      style={styles.stepButton}
+                      onPress={() =>
+                        setQuantities((current) => ({
+                          ...current,
+                          [itemType]: Math.max(1, current[itemType] - 1),
+                        }))
+                      }
+                    >
+                      <Text style={styles.stepText}>−</Text>
+                    </Pressable>
+                    <Text style={styles.quantityNumber}>
+                      {quantities[itemType]}
+                    </Text>
+                    <Pressable
+                      accessibilityLabel={`Aumentar ${label}`}
+                      style={[styles.stepButton, styles.plus]}
+                      onPress={() =>
+                        setQuantities((current) => ({
+                          ...current,
+                          [itemType]: current[itemType] + 1,
+                        }))
+                      }
+                    >
+                      <Text style={styles.lightText}>+</Text>
+                    </Pressable>
+                  </View>
+                </View>
+                <Pressable
+                  style={styles.primaryButton}
+                  onPress={() => addConsumption(itemType)}
+                >
+                  <Text style={styles.primaryText}>Adicionar {label}</Text>
+                </Pressable>
+              </View>
+            );
+          })}
+        </ScrollView>
         <View style={styles.listHeader}>
           <Text style={styles.sectionTitle}>Últimos registros</Text>
           <Pressable onPress={syncItems} disabled={syncing || !online}>
@@ -295,28 +320,39 @@ const styles = StyleSheet.create({
   summaryCount: { color: colors.ink, fontSize: 29, fontWeight: "900" },
   totals: { alignItems: "flex-end", gap: 3 },
   sectionTitle: { color: colors.ink, fontSize: 18, fontWeight: "900" },
-  options: { flexDirection: "row", gap: 12 },
-  option: {
-    flex: 1,
-    backgroundColor: "white",
-    borderColor: colors.ink,
-    borderWidth: 2,
-    borderRadius: 18,
-    padding: 15,
-    gap: 10,
+  registerHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
   },
-  optionSelected: { backgroundColor: colors.blue },
-  optionIcon: { color: colors.ink, fontSize: 28 },
-  optionText: { color: colors.ink, fontSize: 15, fontWeight: "900" },
-  lightText: { color: "white" },
-  card: {
+  swipeHint: { color: colors.muted, fontSize: 11, fontWeight: "800" },
+  carousel: { marginHorizontal: -22 },
+  carouselContent: { gap: 14, paddingHorizontal: 22 },
+  recordCard: {
+    width: 290,
     backgroundColor: "white",
     borderColor: colors.ink,
     borderWidth: 2,
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 16,
     gap: 15,
   },
+  recordArt: {
+    height: 116,
+    borderRadius: 16,
+    padding: 14,
+    justifyContent: "space-between",
+  },
+  recordIcon: { color: colors.ink, fontSize: 58, lineHeight: 62 },
+  recordArtLabel: {
+    color: colors.ink,
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.5,
+  },
+  recordTitle: { color: colors.ink, fontSize: 25, fontWeight: "900" },
+  recordDescription: { color: colors.muted, fontSize: 13, marginTop: -8 },
+  lightText: { color: "white" },
   quantityRow: {
     flexDirection: "row",
     justifyContent: "space-between",
