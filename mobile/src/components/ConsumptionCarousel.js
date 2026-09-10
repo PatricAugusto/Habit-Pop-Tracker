@@ -4,6 +4,42 @@ import { colors, CONSUMPTION_TYPES, consumptionMeta } from "../config/appConfig"
 
 const consumptionCards = CONSUMPTION_TYPES.map((type) => ({ type, ...consumptionMeta[type] }));
 
+export function ConsumptionCard({ card, quantity, onDecrease, onIncrease, onAdd, fullWidth = false }) {
+  return (
+    <View style={[styles.recordCard, fullWidth && styles.fullWidthCard]}>
+      <View style={[styles.recordArt, { backgroundColor: card.accent }]}>
+        <Text style={styles.recordIcon}>{card.icon}</Text>
+        <Text style={styles.recordArtLabel}>{card.artLabel}</Text>
+      </View>
+      <Text style={styles.recordTitle}>{card.label}</Text>
+      <Text style={styles.recordDescription}>Quantas unidades agora?</Text>
+      <View style={styles.quantityRow}>
+        <Text style={styles.quantityText}>{quantity} unidade(s)</Text>
+        <View style={styles.stepper}>
+          <Pressable
+            accessibilityLabel={`Diminuir ${card.label}`}
+            style={styles.stepButton}
+            onPress={onDecrease}
+          >
+            <Text style={styles.stepText}>−</Text>
+          </Pressable>
+          <Text style={styles.quantityNumber}>{quantity}</Text>
+          <Pressable
+            accessibilityLabel={`Aumentar ${card.label}`}
+            style={[styles.stepButton, styles.plus]}
+            onPress={onIncrease}
+          >
+            <Text style={styles.lightText}>+</Text>
+          </Pressable>
+        </View>
+      </View>
+      <Pressable style={styles.primaryButton} onPress={onAdd}>
+        <Text style={styles.primaryText}>Adicionar {card.label}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export function ConsumptionCarousel({ onAdd }) {
   const [quantities, setQuantities] = useState(
     Object.fromEntries(CONSUMPTION_TYPES.map((type) => [type, 1])),
@@ -36,37 +72,14 @@ export function ConsumptionCarousel({ onAdd }) {
         snapToInterval={304}
       >
         {consumptionCards.map((card) => (
-          <View key={card.type} style={styles.recordCard}>
-            <View style={[styles.recordArt, { backgroundColor: card.accent }]}>
-              <Text style={styles.recordIcon}>{card.icon}</Text>
-              <Text style={styles.recordArtLabel}>{card.artLabel}</Text>
-            </View>
-            <Text style={styles.recordTitle}>{card.label}</Text>
-            <Text style={styles.recordDescription}>Quantas unidades agora?</Text>
-            <View style={styles.quantityRow}>
-              <Text style={styles.quantityText}>{quantities[card.type]} unidade(s)</Text>
-              <View style={styles.stepper}>
-                <Pressable
-                  accessibilityLabel={`Diminuir ${card.label}`}
-                  style={styles.stepButton}
-                  onPress={() => updateQuantity(card.type, -1)}
-                >
-                  <Text style={styles.stepText}>−</Text>
-                </Pressable>
-                <Text style={styles.quantityNumber}>{quantities[card.type]}</Text>
-                <Pressable
-                  accessibilityLabel={`Aumentar ${card.label}`}
-                  style={[styles.stepButton, styles.plus]}
-                  onPress={() => updateQuantity(card.type, 1)}
-                >
-                  <Text style={styles.lightText}>+</Text>
-                </Pressable>
-              </View>
-            </View>
-            <Pressable style={styles.primaryButton} onPress={() => handleAdd(card.type)}>
-              <Text style={styles.primaryText}>Adicionar {card.label}</Text>
-            </Pressable>
-          </View>
+          <ConsumptionCard
+            key={card.type}
+            card={card}
+            quantity={quantities[card.type]}
+            onDecrease={() => updateQuantity(card.type, -1)}
+            onIncrease={() => updateQuantity(card.type, 1)}
+            onAdd={() => handleAdd(card.type)}
+          />
         ))}
       </ScrollView>
     </>
@@ -80,6 +93,7 @@ const styles = StyleSheet.create({
   carousel: { marginHorizontal: -22 },
   carouselContent: { gap: 14, paddingHorizontal: 22 },
   recordCard: { width: 290, backgroundColor: "white", borderColor: colors.ink, borderWidth: 2, borderRadius: 24, padding: 16, gap: 15 },
+  fullWidthCard: { width: "100%" },
   recordArt: { height: 116, borderRadius: 16, padding: 14, justifyContent: "space-between" },
   recordIcon: { color: colors.ink, fontSize: 58, lineHeight: 62 },
   recordArtLabel: { color: colors.ink, fontSize: 10, fontWeight: "900", letterSpacing: 1.5 },
