@@ -8,9 +8,16 @@ export function AppHeader({ online }) {
         <Text style={styles.eyebrow}>HABIT POP</Text>
         <Text style={styles.title}>Seu ritmo, do seu jeito.</Text>
       </View>
-      <View style={[styles.status, { backgroundColor: online ? colors.teal : colors.coral }]}>
+      <View
+        style={[
+          styles.status,
+          { backgroundColor: online ? colors.teal : colors.coral },
+        ]}
+      >
         <Text style={styles.statusText}>{online ? "ONLINE" : "OFFLINE"}</Text>
-        <Text style={styles.statusSub}>{online ? "sincronizado" : "salvo local"}</Text>
+        <Text style={styles.statusSub}>
+          {online ? "sincronizado" : "salvo local"}
+        </Text>
       </View>
     </View>
   );
@@ -23,7 +30,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  eyebrow: { color: colors.coral, fontSize: 13, fontWeight: "800", letterSpacing: 2 },
+  eyebrow: {
+    color: colors.coral,
+    fontSize: 13,
+    fontWeight: "800",
+    letterSpacing: 2,
+  },
   title: { color: colors.ink, fontSize: 32, fontWeight: "900", maxWidth: 230 },
   status: { padding: 10, borderRadius: 14, alignItems: "center" },
   statusText: { color: "white", fontSize: 12, fontWeight: "800" },
