@@ -5,6 +5,7 @@ import {
   CONSUMPTION_TYPES,
   consumptionMeta,
 } from "../config/appConfig";
+import { CardArtwork } from "./CardArtwork";
 
 const consumptionCards = CONSUMPTION_TYPES.map((type) => ({
   type,
@@ -22,7 +23,9 @@ export function ConsumptionCard({
   return (
     <View style={[styles.recordCard, fullWidth && styles.fullWidthCard]}>
       <View style={[styles.recordArt, { backgroundColor: card.accent }]}>
-        <Text style={styles.recordIcon}>{card.icon}</Text>
+        <View style={styles.artwork}>
+          <CardArtwork type={card.type} accent={card.accent} />
+        </View>
         <Text style={styles.recordArtLabel}>{card.artLabel}</Text>
       </View>
       <View style={styles.recordBody}>
@@ -128,7 +131,7 @@ const styles = StyleSheet.create({
     padding: 18,
     justifyContent: "space-between",
   },
-  recordIcon: { color: colors.ink, fontSize: 92, lineHeight: 98 },
+  artwork: { flex: 1, marginHorizontal: -8, marginTop: -4 },
   recordArtLabel: {
     color: colors.ink,
     fontSize: 11,
