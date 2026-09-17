@@ -21,7 +21,8 @@ import {
 export function useConsumptions() {
   const [items, setItems] = useState([]);
   const [deletedClientIds, setDeletedClientIds] = useState([]);
-  const [online, setOnline] = useState(true);
+  const [online, setOnline] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const syncingRef = useRef(false);
 
@@ -31,15 +32,28 @@ export function useConsumptions() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+
     Promise.all([loadConsumptions(), loadDeletedClientIds()]).then(
       ([storedItems, storedDeletedClientIds]) => {
+        if (!mounted) return;
         setItems(storedItems);
         setDeletedClientIds(storedDeletedClientIds);
+        setHydrated(true);
       },
     );
-    return NetInfo.addEventListener((state) =>
-      setOnline(Boolean(state.isConnected)),
-    );
+
+    NetInfo.fetch().then((state) => {
+      if (mounted) setOnline(Boolean(state.isConnected));
+    });
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (mounted) setOnline(Boolean(state.isConnected));
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const pendingItems = useMemo(() => getPendingItems(items), [items]);
@@ -76,6 +90,7 @@ export function useConsumptions() {
   const syncItems = useCallback(async () => {
     if (
       syncingRef.current ||
+      !hydrated ||
       !online ||
       (pendingItems.length === 0 && deletedClientIds.length === 0)
     )
@@ -83,16 +98,23 @@ export function useConsumptions() {
 
     syncingRef.current = true;
     setSyncing(true);
+    const itemsToSync = pendingItems;
+    const deletedIdsToSync = deletedClientIds;
     try {
-      await syncConsumptions(pendingItems);
-      for (const clientId of deletedClientIds) {
+      await syncConsumptions(itemsToSync);
+      for (const clientId of deletedIdsToSync) {
         await deleteConsumption(clientId);
       }
-      await persistItems(
-        items.map((item) => ({ ...item, pendingSync: false })),
+      const syncedIds = new Set(itemsToSync.map((item) => item.clientId));
+      const nextItems = items.map((item) =>
+        syncedIds.has(item.clientId) ? { ...item, pendingSync: false } : item,
       );
-      setDeletedClientIds([]);
-      await saveDeletedClientIds([]);
+      await persistItems(nextItems);
+      const remainingDeletedClientIds = deletedClientIds.filter(
+        (clientId) => !deletedIdsToSync.includes(clientId),
+      );
+      setDeletedClientIds(remainingDeletedClientIds);
+      await saveDeletedClientIds(remainingDeletedClientIds);
     } catch {
       Alert.alert(
         "Ainda sem conexão",
@@ -102,11 +124,11 @@ export function useConsumptions() {
       syncingRef.current = false;
       setSyncing(false);
     }
-  }, [deletedClientIds, items, online, pendingItems, persistItems]);
+  }, [deletedClientIds, hydrated, items, online, pendingItems, persistItems]);
 
   useEffect(() => {
-    if (online) syncItems();
-  }, [online, syncItems]);
+    if (online && hydrated && !syncing) syncItems();
+  }, [hydrated, online, syncing, syncItems]);
 
   return {
     items,

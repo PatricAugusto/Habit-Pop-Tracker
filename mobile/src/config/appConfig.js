@@ -1,6 +1,6 @@
 export const STORAGE_KEY = "@habit-pop-tracker/consumptions";
 export const DELETED_STORAGE_KEY = "@habit-pop-tracker/deleted-consumptions";
-export const API_URL = "http://192.168.1.10:3000";
+export const API_URL = "http://192.168.0.111:3000";
 
 export const CONSUMPTION_TYPES = ["beer", "cigarette", "water", "coffee"];
 

@@ -24,6 +24,10 @@ npm run web
 npx expo export --platform android
 ```
 
+## Depuracao no React Native 0.86
+
+O Hermes bridgeless nao suporta o modo legado de depuracao pelo Chrome DevTools Protocol. Use o React Native DevTools aberto pelo menu de desenvolvimento do Expo; nao selecione `Debug JS Remotely` ou uma opcao de Chrome legado.
+
 ## Configuracao da API
 
 A URL atual da API esta em `src/config/appConfig.js`, na constante `API_URL`.
