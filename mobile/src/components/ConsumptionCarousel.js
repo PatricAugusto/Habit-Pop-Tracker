@@ -29,10 +29,23 @@ export function ConsumptionCard({
         <Text style={styles.recordArtLabel}>{card.artLabel}</Text>
       </View>
       <View style={styles.recordBody}>
-        <Text style={styles.recordTitle}>{card.label}</Text>
-        <Text style={styles.recordDescription}>Quantas unidades agora?</Text>
-        <View style={styles.quantityRow}>
-          <Text style={styles.quantityText}>{quantity} unidade(s)</Text>
+        <View style={styles.titleRow}>
+          <View>
+            <Text style={styles.recordKicker}>REGISTRAR AGORA</Text>
+            <Text style={styles.recordTitle}>{card.label}</Text>
+          </View>
+          <View style={[styles.typeDot, { backgroundColor: card.accent }]} />
+        </View>
+        <Text style={styles.recordDescription}>
+          Marque a quantidade deste momento.
+        </Text>
+        <View style={styles.quantityPanel}>
+          <View>
+            <Text style={styles.quantityLabel}>QUANTIDADE</Text>
+            <Text style={styles.quantityText}>
+              {quantity} {quantity === 1 ? "unidade" : "unidades"}
+            </Text>
+          </View>
           <View style={styles.stepper}>
             <Pressable
               accessibilityLabel={`Diminuir ${card.label}`}
@@ -139,21 +152,42 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   recordBody: { flex: 1, paddingHorizontal: 4, paddingBottom: 2 },
-  recordTitle: { color: colors.ink, fontSize: 34, fontWeight: "900" },
-  recordDescription: { color: colors.muted, fontSize: 13, marginTop: -8 },
-  quantityRow: {
+  titleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 22,
   },
-  quantityText: { color: colors.ink, fontSize: 17, fontWeight: "900" },
-  stepper: { flexDirection: "row", alignItems: "center", gap: 12 },
-  stepButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  recordKicker: {
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+  },
+  recordTitle: { color: colors.ink, fontSize: 32, fontWeight: "900", marginTop: 2 },
+  typeDot: { width: 13, height: 13, borderRadius: 7, marginRight: 4 },
+  recordDescription: { color: colors.muted, fontSize: 13, marginTop: 3 },
+  quantityPanel: {
     backgroundColor: colors.paper,
+    borderRadius: 17,
+    padding: 12,
+    marginTop: 18,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  quantityLabel: {
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  quantityText: { color: colors.ink, fontSize: 17, fontWeight: "900", marginTop: 3 },
+  stepper: { flexDirection: "row", alignItems: "center", gap: 9 },
+  stepButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "white",
     borderColor: colors.ink,
     borderWidth: 2,
     alignItems: "center",
@@ -161,7 +195,7 @@ const styles = StyleSheet.create({
   },
   plus: { backgroundColor: colors.coral, borderWidth: 0 },
   stepText: { color: colors.ink, fontSize: 23 },
-  quantityNumber: { color: colors.ink, fontSize: 22, fontWeight: "900" },
+  quantityNumber: { color: colors.ink, fontSize: 21, fontWeight: "900", minWidth: 18, textAlign: "center" },
   lightText: { color: "white" },
   primaryButton: {
     backgroundColor: colors.ink,
