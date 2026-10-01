@@ -21,7 +21,7 @@ Scripts:
 - `npm run build`: compila `src` para `dist`.
 - `npm run dev`: compila e inicia o servidor.
 - `npm start`: inicia o conteudo ja compilado de `dist`.
-- `npm test`: atualmente executa o build TypeScript.
+- `npm test`: compila o TypeScript e executa testes HTTP da API com SQLite temporario.
 
 ## Configuracao
 
@@ -131,6 +131,7 @@ A API valida tipo, quantidade, identificador e data no servidor, mas isso nao su
 
 ```powershell
 npm run build
+npm test
 ```
 
 Para um teste manual, inicie o servidor e consulte:

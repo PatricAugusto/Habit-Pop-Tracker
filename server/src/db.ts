@@ -73,6 +73,14 @@ export function getDatabase(): Promise<Database> {
   return database;
 }
 
+export async function closeDatabase(): Promise<void> {
+  if (!database) return;
+
+  const db = await database;
+  database = undefined;
+  await db.close();
+}
+
 export async function insertConsumption(input: ConsumptionInput): Promise<Consumption> {
   const db = await getDatabase();
   await db.run(

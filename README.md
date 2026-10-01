@@ -92,13 +92,14 @@ Backend:
 
 ```powershell
 cd server
-npm run build
+npm test
 ```
 
 Mobile:
 
 ```powershell
 cd mobile
+npm test
 npx expo export --platform android
 ```
 

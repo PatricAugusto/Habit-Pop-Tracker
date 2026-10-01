@@ -22,7 +22,11 @@ npm run android
 npm run ios
 npm run web
 npx expo export --platform android
+npm test
 ```
+
+Os testes automatizados cobrem as regras de dominio de registros, totais diarios,
+pendencias de sincronizacao e formatacao de horario.
 
 ## Depuracao no React Native 0.86
 
