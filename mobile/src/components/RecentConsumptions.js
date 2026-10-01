@@ -53,7 +53,7 @@ export function RecentConsumptions({
           <View style={styles.modalHeader}>
             <View>
               <Text style={styles.cardEyebrow}>CONTROLE DIÁRIO</Text>
-              <Text style={styles.modalTitle}>Seus registros</Text>
+              <Text style={styles.modalTitle}>Histórico</Text>
             </View>
             <Pressable
               accessibilityRole="button"
@@ -65,15 +65,28 @@ export function RecentConsumptions({
             </Pressable>
           </View>
           <View style={styles.syncBar}>
-            <Text style={styles.syncSummary}>
-              {pendingCount > 0
-                ? `${pendingCount} pendentes`
-                : "Tudo sincronizado"}
-            </Text>
-            <Pressable onPress={onSync} disabled={syncing || !online}>
+            <View style={styles.syncSummaryRow}>
+              <View
+                style={[
+                  styles.syncDot,
+                  pendingCount > 0 && styles.pendingDot,
+                ]}
+              />
+              <Text style={styles.syncSummary}>
+                {pendingCount > 0
+                  ? `${pendingCount} pendentes`
+                  : "Tudo sincronizado"}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onSync}
+              disabled={syncing || !online}
+              style={styles.syncButton}
+            >
               <Text
                 style={[
-                  styles.pending,
+                  styles.syncButtonText,
                   (syncing || !online) && styles.disabled,
                 ]}
               >
@@ -100,29 +113,37 @@ export function RecentConsumptions({
                       >
                         <Text>{meta.icon}</Text>
                       </View>
-                      <View>
+                      <View style={styles.itemCopy}>
                         <Text style={styles.itemTitle}>{meta.label}</Text>
-                        <Text style={styles.itemTime}>
-                          {formatTime(item.occurredAt)}
-                        </Text>
+                        <View style={styles.itemMeta}>
+                          <Text style={styles.itemTime}>
+                            {formatTime(item.occurredAt)}
+                          </Text>
+                          <View
+                            style={[
+                              styles.syncDot,
+                              item.pendingSync && styles.pendingDot,
+                            ]}
+                          />
+                          <Text
+                            style={[
+                              styles.syncState,
+                              item.pendingSync && styles.pendingState,
+                            ]}
+                          >
+                            {item.pendingSync ? "Pendente" : "Sincronizado"}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                    <View style={styles.itemCount}>
-                      <Text style={styles.countText}>x{item.quantity}</Text>
-                      <Text
-                        style={[
-                          styles.syncState,
-                          {
-                            color: item.pendingSync
-                              ? colors.coral
-                              : colors.teal,
-                          },
-                        ]}
-                      >
-                        {item.pendingSync ? "PENDENTE" : "SYNC"}
-                      </Text>
+                    <View style={styles.itemActions}>
+                      <View style={styles.itemCount}>
+                        <Text style={styles.countText}>x{item.quantity}</Text>
+                      </View>
                       <Pressable
+                        accessibilityRole="button"
                         accessibilityLabel={`Excluir ${meta.label}`}
+                        style={styles.deleteButton}
                         hitSlop={8}
                         onPress={() =>
                           Alert.alert(
@@ -139,7 +160,7 @@ export function RecentConsumptions({
                           )
                         }
                       >
-                        <Text style={styles.deleteText}>Excluir</Text>
+                        <Text style={styles.deleteText}>×</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -203,53 +224,86 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     color: colors.ink,
-    fontSize: 29,
+    fontSize: 28,
     fontWeight: "900",
     marginTop: 3,
   },
   closeText: { color: colors.ink, fontSize: 34, lineHeight: 34 },
   syncBar: {
     backgroundColor: "white",
-    borderColor: colors.ink,
-    borderWidth: 2,
-    borderRadius: 15,
-    padding: 13,
+    borderColor: "#E9E4DB",
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
     marginTop: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
   },
+  syncSummaryRow: { flexDirection: "row", alignItems: "center", gap: 7 },
   syncSummary: { color: colors.ink, fontSize: 13, fontWeight: "800" },
-  pending: { color: colors.blue, fontSize: 13, fontWeight: "800" },
+  syncButton: {
+    backgroundColor: colors.paper,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  syncButtonText: { color: colors.ink, fontSize: 12, fontWeight: "900" },
   disabled: { color: colors.muted },
   list: {
     backgroundColor: "white",
-    borderColor: colors.ink,
-    borderWidth: 2,
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    borderColor: "#E9E4DB",
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingHorizontal: 14,
     marginTop: 14,
   },
   item: {
-    paddingVertical: 15,
+    minHeight: 72,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 10,
   },
-  itemInfo: { flexDirection: "row", alignItems: "center", gap: 12 },
+  itemInfo: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 11 },
   itemIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
   },
+  itemCopy: { flex: 1, minWidth: 0 },
   itemTitle: { color: colors.ink, fontSize: 15, fontWeight: "900" },
-  itemTime: { color: colors.muted, fontSize: 12, marginTop: 2 },
-  itemCount: { alignItems: "flex-end", gap: 3 },
-  countText: { color: colors.ink, fontSize: 16, fontWeight: "900" },
-  syncState: { fontSize: 10, fontWeight: "800" },
-  deleteText: { color: colors.coral, fontSize: 11, fontWeight: "800" },
-  separator: { height: 1, backgroundColor: "#E9E4DB" },
-  empty: { color: colors.muted, paddingVertical: 18 },
+  itemMeta: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 4 },
+  itemTime: { color: colors.muted, fontSize: 11 },
+  syncDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.teal },
+  pendingDot: { backgroundColor: colors.coral },
+  syncState: { color: colors.muted, fontSize: 10, fontWeight: "700" },
+  pendingState: { color: colors.coral },
+  itemActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  itemCount: {
+    minWidth: 42,
+    height: 34,
+    paddingHorizontal: 7,
+    backgroundColor: colors.paper,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  countText: { color: colors.ink, fontSize: 14, fontWeight: "900" },
+  deleteButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 11,
+    backgroundColor: "#FFF0EC",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteText: { color: colors.coral, fontSize: 22, lineHeight: 24, fontWeight: "700" },
+  separator: { height: 1, backgroundColor: "#EEEAE3", marginLeft: 51 },
+  empty: { color: colors.muted, paddingVertical: 20 },
 });
